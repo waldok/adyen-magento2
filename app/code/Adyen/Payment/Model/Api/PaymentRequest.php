@@ -108,6 +108,12 @@ class PaymentRequest extends \Magento\Framework\Object
                 "paymentRequest.card.billingAddress.stateOrProvince" => $billingAddress->getRegionCode(),
                 "paymentRequest.card.billingAddress.country" => $billingAddress->getCountryId()
             );
+            
+            // houseNumberOrName is mandatory
++           if($requestBilling['paymentRequest.card.billingAddress.houseNumberOrName'] == "") {
++               $requestBilling['paymentRequest.card.billingAddress.houseNumberOrName'] = "NA";
++           }
+            
             $request = array_merge($request, $requestBilling);
         }
 
@@ -123,6 +129,12 @@ class PaymentRequest extends \Magento\Framework\Object
                 "paymentRequest.card.deliveryAddress.stateOrProvince" => $deliveryAddress->getRegionCode(),
                 "paymentRequest.card.deliveryAddress.country" => $deliveryAddress->getCountryId()
             );
+            
+            // houseNumberOrName is mandatory
++           if($requestDelivery['paymentRequest.card.deliveryAddress.houseNumberOrName'] == "") {
++               $requestDelivery['paymentRequest.card.deliveryAddress.houseNumberOrName'] = "NA";
++           }
+
             $request = array_merge($request, $requestDelivery);
         }
 
