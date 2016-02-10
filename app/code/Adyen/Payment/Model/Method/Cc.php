@@ -161,6 +161,20 @@ class Cc extends \Magento\Payment\Model\Method\Cc
         }
         return $this;
     }
+    
+     /**
+     * Validate payment method information object
+     *
+     * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function validate()
+    {
+        // validation only possible on front-end for CSE script
+        return $this;
+    }
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
