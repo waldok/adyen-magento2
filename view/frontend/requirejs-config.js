@@ -5,6 +5,11 @@
 /*jshint browser:true jquery:true*/
 /*global alert*/
 var config = {
+    // map: {
+    //     '*': {
+    //         adyen_apple_pay: 'Adyen_Payment/js/adyen_apple_pay'
+    //     }
+    // },
     paths: {
         'adyen/encrypt' : 'Adyen_Payment/js/view/payment/adyen.encrypt.min'
     },

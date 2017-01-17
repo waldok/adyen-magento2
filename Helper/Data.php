@@ -89,6 +89,20 @@ class Data extends AbstractHelper
      * @desc return recurring types for configuration setting
      * @return array
      */
+    public function getShippingTypes()
+    {
+        return [
+            \Adyen\Payment\Model\ShippingType::SHIPPING_METHOD => __('Shipping Method'),
+            \Adyen\Payment\Model\ShippingType::DELIVERY_METHOD => __('Delivery Method'),
+            \Adyen\Payment\Model\ShippingType::STORE_PICKUP => __('Store Pickup Method'),
+            \Adyen\Payment\Model\ShippingType::SERVICE_PICKUP =>__('Service Pickup Method')
+        ];
+    }
+
+    /**
+     * @desc return recurring types for configuration setting
+     * @return array
+     */
     public function getModes()
     {
         return [
@@ -387,6 +401,28 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @desc Gives back adyen_apple_pay configuration values
+     * @param $field
+     * @param null $storeId
+     * @return mixed
+     */
+    public function getAdyenApplePayConfigData($field, $storeId = null)
+    {
+        return $this->getConfigData($field, 'adyen_apple_pay', $storeId);
+    }
+
+    /**
+     * @desc Gives back adyen_pay_by_mail configuration values as flag
+     * @param $field
+     * @param null $storeId
+     * @return mixed
+     */
+    public function getAdyenApplePayConfigDataFlag($field, $storeId = null)
+    {
+        return $this->getConfigData($field, 'adyen_apple_pay', $storeId, true);
+    }
+
+    /**
      * @desc Retrieve decrypted hmac key
      * @return string
      */
@@ -416,6 +452,32 @@ class Data extends AbstractHelper
         return $secretWord;
     }
 
+    public function getApplePayMerchantIdentifier()
+    {
+        switch ($this->isDemoMode()) {
+            case true:
+                $applePayIdentifier =  trim($this->getAdyenApplePayConfigData('merchant_identifier_test'));
+                break;
+            default:
+                $applePayIdentifier = trim($this->getAdyenApplePayConfigData('merchant_identifier_test'));
+                break;
+        }
+        return $applePayIdentifier;
+    }
+
+    public function getApplePayFullPathLocationPEMFile()
+    {
+        switch ($this->isDemoMode()) {
+            case true:
+                $applePayIdentifier =  trim($this->getAdyenApplePayConfigData('full_path_location_pem_file_test'));
+                break;
+            default:
+                $applePayIdentifier = trim($this->getAdyenApplePayConfigData('full_path_location_pem_file_live'));
+                break;
+        }
+        return $applePayIdentifier;
+    }
+    
     /**
      * @desc Check if configuration is set to demo mode
      * @return mixed

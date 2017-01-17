@@ -60,6 +60,18 @@
                 <payment_action>authorize</payment_action>
                 <group>adyen</group>
             </adyen_oneclick>
+            <adyen_apple_pay translate="title" module="adyen">
+                <active>0</active>
+                <model>Adyen\Payment\Model\Method\ApplePay</model>
+                <group>adyen</group>
+                <title>Adyen Apple Pay</title>
+                <sort_order>6</sort_order>
+                <shipping_type>shipping</shipping_type>
+                <allow_quest_checkout>1</allow_quest_checkout>
+                <change_address>1</change_address>
+                <show_in_payment_step_checkout>1</show_in_payment_step_checkout>
+                <show_outside_of_checkout>1</show_outside_of_checkout>
+            </adyen_apple_pay>
             <adyen_hpp>
                 <active>0</active>
                 <model>Adyen\Payment\Model\Method\Hpp</model>

@@ -1,0 +1,38 @@
+
+
+<?php
+//
+//$_product = $block->getProduct();
+//
+//if ($_product) {
+//    // in product
+//}
+//
+//$block->getShippingMethods();
+//echo 'hier';
+//die();
+
+?>
+
+
+<div data-bind="scope: 'apple-pay'">
+    <!-- ko template: getTemplate() --><!-- /ko -->
+</div>
+
+
+<script type="text/x-magento-init">
+        {
+            "*": {
+                "Magento_Ui/js/core/app": {
+                    "components": {
+                        "apple-pay": {
+                            "component": "Adyen_Payment/js/adyen_apple_pay",
+                            "template" : "Adyen_Payment/apple_pay",
+                            "productId": "<?php echo $block->getProduct()->getDescription() . "test"; ?>"
+                        }
+                    }
+                }
+            }
+        }
+</script>
+
