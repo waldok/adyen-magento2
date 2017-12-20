@@ -36,11 +36,15 @@ class AdyenOneclickConfigProvider implements ConfigProviderInterface
      */
     protected $config;
 
-
     /**
      * @var \Adyen\Payment\Helper\Data
      */
     protected $_adyenHelper;
+
+    /**
+     * @var \Adyen\Payment\Helper\PaymentMethods
+     */
+    protected $_adyenPaymentMethodsHelper;
 
     /**
      * @var \Magento\Framework\App\RequestInterface
@@ -76,14 +80,17 @@ class AdyenOneclickConfigProvider implements ConfigProviderInterface
      * AdyenOneclickConfigProvider constructor.
      *
      * @param \Adyen\Payment\Helper\Data $adyenHelper
+     * @param \Adyen\Payment\Helper\PaymentMethods $adyenPaymentMethodsHelper
      * @param \Magento\Framework\App\RequestInterface $request
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Checkout\Model\Session $session
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\UrlInterface $urlBuilder
+     * @param \Magento\Payment\Model\CcConfig $ccConfig
      */
     public function __construct(
         \Adyen\Payment\Helper\Data $adyenHelper,
+        \Adyen\Payment\Helper\PaymentMethods $adyenPaymentMethodsHelper,
         \Magento\Framework\App\RequestInterface $request,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $session,
@@ -98,6 +105,7 @@ class AdyenOneclickConfigProvider implements ConfigProviderInterface
         $this->_storeManager = $storeManager;
         $this->_urlBuilder = $urlBuilder;
         $this->ccConfig = $ccConfig;
+        $this->_adyenPaymentMethodsHelper = $adyenPaymentMethodsHelper;
     }
 
     /**
@@ -177,7 +185,7 @@ class AdyenOneclickConfigProvider implements ConfigProviderInterface
             $grandTotal = $this->_getQuote()->getGrandTotal();
             $recurringType = $this->_getRecurringContractType();
 
-            $billingAgreements = $this->_adyenHelper->getOneClickPaymentMethods(
+            $billingAgreements = $this->_adyenPaymentMethodsHelper->getOneClickPaymentMethods(
                 $customerId, 
                 $storeId, 
                 $grandTotal, 

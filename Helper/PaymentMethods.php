@@ -91,6 +91,11 @@ class PaymentMethods extends AbstractHelper
     protected $_themeProvider;
 
     /**
+     * @var \Adyen\Payment\Model\Api\PaymentRequest
+     */
+    protected $_adyenPaymentRequest;
+
+    /**
      * PaymentMethods constructor.
      *
      * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
@@ -118,7 +123,8 @@ class PaymentMethods extends AbstractHelper
         \Magento\Framework\App\RequestInterface $request,
         \Magento\Framework\View\Asset\Source $assetSource,
         \Magento\Framework\View\DesignInterface $design,
-        \Magento\Framework\View\Design\Theme\ThemeProviderInterface $themeProvider
+        \Magento\Framework\View\Design\Theme\ThemeProviderInterface $themeProvider,
+        \Adyen\Payment\Model\Api\PaymentRequest $paymentRequest
     ) {
         $this->_quoteRepository = $quoteRepository;
         $this->_quoteIdMaskFactory = $quoteIdMaskFactory;
@@ -132,6 +138,7 @@ class PaymentMethods extends AbstractHelper
         $this->_assetSource = $assetSource;
         $this->_design = $design;
         $this->_themeProvider = $themeProvider;
+        $this->_adyenPaymentRequest = $paymentRequest;
     }
 
     /**
@@ -453,5 +460,110 @@ class PaymentMethods extends AbstractHelper
     protected function _getQuote()
     {
         return $this->_session->getQuote();
+    }
+
+    /**
+     * Get payment methods from the listRecurringDetails API
+     *
+     * @param $customerId
+     * @param $storeId
+     * @param $grandTotal
+     * @param $recurringType
+     * @return array
+     * @throws \Exception
+     */
+    public function getOneClickPaymentMethods($customerId, $storeId, $grandTotal, $recurringType)
+    {
+        $billingAgreements = [];
+
+
+        // get the billing agreements from the listRecurringDetails call
+        $recurringContracts = $this->_adyenPaymentRequest->getRecurringContractsForShopper($customerId,$storeId);
+//        print_r($recurringContracts);
+
+        foreach ($recurringContracts as $recurringDetailReference => $agreementData) {
+
+//            $agreementData = $billingAgreement->getAgreementData();
+
+            // no agreementData and contractType then ignore
+            if ((!is_array($agreementData)) || (!isset($agreementData['contractTypes']))) {
+                continue;
+            }
+
+            // check if contractType is supporting the selected contractType for OneClick payments
+            $allowedContractTypes = $agreementData['contractTypes'];
+            if (in_array($recurringType, $allowedContractTypes)) {
+
+
+                // allow only cards
+                if(isset($agreementData['card']['number'])) {
+
+                    // only cards
+                    $label = __('%1, %2, **** %3',
+                        $agreementData['variant'],
+                        $agreementData['card']['holderName'],
+                        $agreementData['card']['number'],
+                        $agreementData['card']['expiryMonth'],
+                        $agreementData['card']['expiryYear']
+                    );
+
+                    $data = [
+                        'reference_id' => $recurringDetailReference,
+                        'agreement_label' => $label,
+                        'agreement_data' => $agreementData
+                    ];
+
+                    if ($this->_adyenHelper->showLogos()) {
+                        $logoName = $agreementData['variant'];
+
+                        $asset = $this->_adyenHelper->createAsset(
+                            'Adyen_Payment::images/logos/' . $logoName . '.png'
+                        );
+
+                        $icon = null;
+                        $placeholder = $this->_assetSource->findSource($asset);
+                        if ($placeholder) {
+                            list($width, $height) = getimagesize($asset->getSourceFile());
+                            $icon = [
+                                'url' => $asset->getUrl(),
+                                'width' => $width,
+                                'height' => $height
+                            ];
+                        }
+                        $data['logo'] = $icon;
+                    }
+
+                    /**
+                     * Check if there are installments for this creditcard type defined
+                     */
+                    $data['number_of_installments'] = 0;
+                    $ccType = $this->_adyenHelper->getMagentoCreditCartType($agreementData['variant']);
+                    $installments = null;
+                    $installmentsValue = $this->_adyenHelper->getAdyenCcConfigData('installments');
+                    if ($installmentsValue) {
+                        $installments = unserialize($installmentsValue);
+                    }
+
+                    if ($installments) {
+                        $numberOfInstallments = null;
+
+                        foreach ($installments as $ccTypeInstallment => $installment) {
+                            if ($ccTypeInstallment == $ccType) {
+                                foreach ($installment as $amount => $installments) {
+                                    if ($grandTotal <= $amount) {
+                                        $numberOfInstallments = $installments;
+                                    }
+                                }
+                            }
+                        }
+                        if ($numberOfInstallments) {
+                            $data['number_of_installments'] = $numberOfInstallments;
+                        }
+                    }
+                    $billingAgreements[] = $data;
+                }
+            }
+        }
+        return $billingAgreements;
     }
 }
